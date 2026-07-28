@@ -41,3 +41,22 @@ int32_t lltui_abs_i32(int32_t value) {
 lltui_pos lltui_pos_get_lowest(lltui_pos pos_a, lltui_pos pos_b) {
     return (pos_a.y > pos_b.y) ? pos_a : pos_b;
 }
+
+bool lltui_pos_move_together(lltui_pos* start_pos, lltui_pos* end_pos) {
+    int32_t diff_x = lltui_pos_diff_x(*start_pos, *end_pos);
+    int32_t diff_y = lltui_pos_diff_y(*start_pos, *end_pos);
+
+    if (diff_x == 0 && diff_y == 0) return true;
+
+    if (diff_x < 0) {
+        lltui_pos_move_right(start_pos);
+    } else if(diff_x > 0) {
+        lltui_pos_move_left(start_pos);
+    } else if(diff_y < 0) {
+        lltui_pos_move_down(start_pos);
+    } else if(diff_y > 0) {
+        lltui_pos_move_up(start_pos);
+    }
+
+    return false;
+}

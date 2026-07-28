@@ -15,14 +15,24 @@ int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
     lltui_widget_set_pos(ctx, descriptor, start_pos, end_pos);
 
     switch (type) {
-        case lltui_textfield: widget->type.textfield.desc = -1; break;
+        case lltui_textfield: 
+            widget->type.textfield.desc = -1;
+            widget->updated = false;
+            break;
+
+        case lltui_line: 
+            widget->type.textfield.desc = -1;
+            widget->updated = true;
+            break;
         default: break;
     }
+
+    widget->widget_type = type;
 
     lltui_widget_color_background(ctx, descriptor, LLTUI_BLACK);
     lltui_widget_color_foreground(ctx, descriptor, LLTUI_WHITE);
 
-    widget->updated = false;
+    
 
     return descriptor;
 }
@@ -36,7 +46,8 @@ void lltui_widget_set_pos(lltui_ctx* ctx, int32_t descriptor, lltui_pos start_po
     widget->start_pos = start_pos;
     widget->end_pos = end_pos;
 
-    ctx->lowest_pos = lltui_pos_get_lowest(ctx->lowest_pos, start_pos);
+    lltui_pos tmp_lowest = lltui_pos_get_lowest(start_pos, end_pos);
+    ctx->lowest_pos = lltui_pos_get_lowest(ctx->lowest_pos, tmp_lowest);
 }
 
 void lltui_widget_set_text(lltui_ctx* ctx, int32_t descriptor, char* str) {
@@ -90,21 +101,24 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
 
     if(widget->updated == false) return;
 
-    lltui_cursor_move(ctx, widget->start_pos);
-
     lltui_cursor_color(ctx, widget->color);
 
     switch (widget->widget_type)
     {
         case lltui_textfield:
-            //lltui_cursor_clear_line(ctx, widget->start_pos, widget->end_pos);
+            lltui_cursor_clear_line(ctx, widget->start_pos, widget->end_pos);
+            lltui_cursor_move(ctx, widget->start_pos);
             char* c = (char*)lltui_arena_get_ref(&ctx->widget_arena, widget->type.textfield.desc);
             if (widget->visability == lltui_visible) {
                 ctx->cb.tx_cb(c, strlen(c));
             }
             break;
 
-        case lltui_line: LLTUI_PRINTF("TYPE: LINE"); break;
+        case lltui_line:
+            lltui_cursor_clear_line(ctx, widget->start_pos, widget->end_pos);
+            lltui_cursor_move(ctx, widget->start_pos);
+            lltui_cursor_draw_line(ctx, widget->start_pos, widget->end_pos);
+            break;
 
     
         default: break;

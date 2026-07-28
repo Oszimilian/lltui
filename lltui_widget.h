@@ -31,7 +31,7 @@ typedef struct lltui_widget{
             int32_t desc;
         }textfield;
         struct {
-            lltui_pos end_pos;
+            int32_t desc;
         }line;
     }type;
 }lltui_widget;
@@ -49,5 +49,7 @@ void lltui_widget_show(lltui_ctx* ctx, int32_t descriptor);
 
 void lltui_widget_color_foreground(lltui_ctx* ctx, int32_t descriptor, uint8_t color);
 void lltui_widget_color_background(lltui_ctx* ctx, int32_t descriptor, uint8_t color);
+
+
 
 #endif

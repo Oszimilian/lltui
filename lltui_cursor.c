@@ -88,35 +88,26 @@ void lltui_cursor_color(lltui_ctx* ctx, lltui_color color) {
     ctx->cb.tx_cb(str, (uint32_t)(insert - str));
 }
 
-void lltui_cursor_clear_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos){
-    uint32_t diff_x = lltui_pos_diff_x(start_pos, end_pos);
-    uint32_t diff_y = lltui_pos_diff_y(start_pos, end_pos);
 
-    uint32_t diff = (diff_x == 0) ? diff_y : diff_x;
 
-    uint8_t direction = 0;
-    if (diff_x > 0) direction = lltui_right;
-    else if (diff_y > 0) direction = lltui_down;
-    else if (diff_x < 0) direction = lltui_left;
-    else if (diff_y < 0) direction = lltui_up;
+void lltui_cursor_clear_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos) {
+    do{
+        lltui_cursor_move(ctx, start_pos);
+        ctx->cb.tx_cb(" ", 1);
+    }while(lltui_pos_move_together(&start_pos, &end_pos) == false);
+}
 
-    for (uint32_t i = 0; i < diff; i++) {
+void lltui_cursor_draw_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos) {
+    uint32_t diff_x = lltui_pos_abs_diff_x(start_pos, end_pos);
+
+    do{
         lltui_cursor_move(ctx, start_pos);
 
-        switch (direction) {
-            case lltui_up:      lltui_pos_move_up(&start_pos);      break;
-            case lltui_down:    lltui_pos_move_down(&start_pos);    break;
-            case lltui_right:   lltui_pos_move_right(&start_pos);   break;
-            case lltui_left:    lltui_pos_move_left(&start_pos);    break;
-        
-            default: break;
+        if (diff_x > 0) {
+            ctx->cb.tx_cb("\xE2\x94\x80", 3);
+        } else {
+            ctx->cb.tx_cb("\xE2\x94\x82", 3);
         }
-
-        char* insert = &str[0];
-        *insert = 0x7F;
-
-        ctx->cb.tx_cb(str, (uint32_t)(insert - str));
-    }
-
-
+    } while(lltui_pos_move_together(&start_pos, &end_pos) == false);
+    
 }

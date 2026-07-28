@@ -46,24 +46,29 @@ int main() {
     lltui_pos_move_down(&end_pos);
     int32_t d2 = lltui_widget_create(&ctx, start_pos, end_pos, lltui_textfield);
 
+    lltui_pos_move_down(&start_pos);
+    lltui_pos_move_down(&end_pos);
+    int32_t d3 = lltui_widget_create(&ctx, start_pos, end_pos, lltui_line);
+    
+    lltui_pos end_pos2 = {.x = 2, .y = 10};
+    int32_t d4 = lltui_widget_create(&ctx, start_pos, end_pos2, lltui_line);
 
     lltui_widget_set_text(&ctx, d2, "Maximilian");
 
 
     lltui_cursor_clear_window(&ctx);
 
-    lltui_widget_color_foreground(&ctx, d2, LLTUI_RED);
-    lltui_widget_color_background(&ctx, d2, LLTUI_GREEN);   
-
      
     lltui_widget_print(&ctx, d);
     lltui_widget_print(&ctx, d2);
+    lltui_widget_print(&ctx, d3);
+    lltui_widget_print(&ctx, d4);
 
 
     
 
 
-    lltui_widget_set_text(&ctx, d, "H");
+    lltui_widget_set_text(&ctx, d, "Oszi");
 
     lltui_widget_print(&ctx, d);
     lltui_widget_print(&ctx, d2);

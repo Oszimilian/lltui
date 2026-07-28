@@ -2,6 +2,7 @@
 #define _LLTUI_POS_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 typedef enum {
     lltui_up,
@@ -30,5 +31,7 @@ void lltui_pos_move_left(lltui_pos* pos);
 int32_t lltui_abs_i32(int32_t value);
 
 lltui_pos lltui_pos_get_lowest(lltui_pos pos_a, lltui_pos pos_b);
+
+bool lltui_pos_move_together(lltui_pos* start_pos, lltui_pos* end_pos);
 
 #endif
