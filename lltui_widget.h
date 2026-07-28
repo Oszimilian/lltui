@@ -23,12 +23,12 @@ typedef struct lltui_widget{
     lltui_widget_type widget_type;
     lltui_widget_visibility visability;
     lltui_pos start_pos;
+    lltui_pos end_pos;
     lltui_color color;
+    bool updated;
     union {
         struct {
-            int32_t desc; 
-            uint32_t len;
-            uint32_t last_len;
+            int32_t desc;
         }textfield;
         struct {
             lltui_pos end_pos;
@@ -36,9 +36,10 @@ typedef struct lltui_widget{
     }type;
 }lltui_widget;
 
-int32_t lltui_widget_textfield_create(lltui_ctx* ctx, lltui_pos pos);
-void lltui_widget_textfield_pos_set(lltui_ctx* ctx, int32_t descriptor, lltui_pos pos);
-void lltui_widget_textfield_text_set(lltui_ctx* ctx, int32_t descriptor, char* str);
+int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos, lltui_widget_type type);
+void lltui_widget_set_pos(lltui_ctx* ctx, int32_t descriptor, lltui_pos start_pos, lltui_pos end_pos);
+
+void lltui_widget_set_text(lltui_ctx* ctx, int32_t descriptor, char* str);
 
 void lltui_widget_info(lltui_ctx* ctx, int32_t descriptor);
 void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor);

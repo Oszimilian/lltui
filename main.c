@@ -35,30 +35,42 @@ int main() {
     ctx.cb.rx_cb = read_lltui_buffer;
 
     lltui_ctx_init(&ctx, 1024);
-    lltui_pos pos = {.x = 10, .y = 10};
-    int32_t d = lltui_widget_textfield_create(&ctx, pos);
-    lltui_widget_textfield_text_set(&ctx, d, "Hallo");
+    
+    lltui_pos start_pos = {.x = 2, .y = 2};
+    lltui_pos end_pos   = {.x = 20, .y = 2};
 
-    pos.x = 2;
-    int32_t d2 = lltui_widget_textfield_create(&ctx, pos);
-    lltui_widget_textfield_text_set(&ctx, d2, "Maximilian");
+    int32_t d = lltui_widget_create(&ctx, start_pos, end_pos, lltui_textfield);
+    lltui_widget_set_text(&ctx, d, "Hallo");
+
+    lltui_pos_move_down(&start_pos);
+    lltui_pos_move_down(&end_pos);
+    int32_t d2 = lltui_widget_create(&ctx, start_pos, end_pos, lltui_textfield);
+
+
+    lltui_widget_set_text(&ctx, d2, "Maximilian");
 
 
     lltui_cursor_clear_window(&ctx);
 
     lltui_widget_color_foreground(&ctx, d2, LLTUI_RED);
-    lltui_widget_color_background(&ctx, d2, LLTUI_GREEN);
+    lltui_widget_color_background(&ctx, d2, LLTUI_GREEN);   
 
+     
+    lltui_widget_print(&ctx, d);
+    lltui_widget_print(&ctx, d2);
+
+
+    
+
+
+    lltui_widget_set_text(&ctx, d, "H");
 
     lltui_widget_print(&ctx, d);
     lltui_widget_print(&ctx, d2);
 
-    lltui_widget_textfield_text_set(&ctx, d, "H");
-    lltui_widget_print(&ctx, d);
-
-    lltui_widget_print(&ctx, d2);
 
 
+    lltui_ctx_destroy(&ctx);
     
 
     return 0;

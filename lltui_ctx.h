@@ -3,6 +3,7 @@
 
 
 #include "lltui_arena.h"
+#include "lltui_pos.h"
 
 
 typedef struct {
@@ -18,8 +19,9 @@ typedef struct lltui_ctx {
     lltui_cb cb;
     lltui_arena widget_arena;
     int32_t current_descriptor;
+    lltui_pos lowest_pos;
 }lltui_ctx;
 
 void lltui_ctx_init(lltui_ctx* ctx, uint32_t size);
-
+void lltui_ctx_destroy(lltui_ctx* ctx);
 #endif
