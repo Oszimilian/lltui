@@ -5,6 +5,13 @@
 #include <stdbool.h>
 
 typedef enum {
+    lltui_up_left,
+    lltui_up_right,
+    lltui_down_left,
+    lltui_down_right
+}lltui_corner_type;
+
+typedef enum {
     lltui_up,
     lltui_down,
     lltui_right,
@@ -33,5 +40,7 @@ int32_t lltui_abs_i32(int32_t value);
 lltui_pos lltui_pos_get_lowest(lltui_pos pos_a, lltui_pos pos_b);
 
 bool lltui_pos_move_together(lltui_pos* start_pos, lltui_pos* end_pos);
+
+lltui_pos lltui_pos_get_corner(lltui_pos start_pos, lltui_pos end_pos, lltui_corner_type type);
 
 #endif

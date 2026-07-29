@@ -7,6 +7,8 @@
 #include "lltui_ctx.h"
 #include "lltui_color.h"
 
+
+
 typedef enum {
     lltui_visible,
     lltui_shadowd
@@ -15,6 +17,8 @@ typedef enum {
 typedef enum {
     lltui_textfield,
     lltui_line,
+    lltui_box,
+    lltui_corner
 }lltui_widget_type;
 
 
@@ -33,6 +37,13 @@ typedef struct lltui_widget{
         struct {
             int32_t desc;
         }line;
+        struct {
+            lltui_corner_type corner_type;
+        }corner;
+        struct {
+            int32_t lines[4];
+            int32_t corners[4];
+        }box;
     }type;
 }lltui_widget;
 
@@ -50,6 +61,6 @@ void lltui_widget_show(lltui_ctx* ctx, int32_t descriptor);
 void lltui_widget_color_foreground(lltui_ctx* ctx, int32_t descriptor, uint8_t color);
 void lltui_widget_color_background(lltui_ctx* ctx, int32_t descriptor, uint8_t color);
 
-
+void lltui_widget_set_corner_type(lltui_ctx* ctx, int32_t descriptor, lltui_corner_type type);
 
 #endif

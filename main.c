@@ -34,7 +34,7 @@ int main() {
     ctx.cb.tx_cb = print_lltui_buffer;
     ctx.cb.rx_cb = read_lltui_buffer;
 
-    lltui_ctx_init(&ctx, 1024);
+    lltui_ctx_init(&ctx, 2048);
     
     lltui_pos start_pos = {.x = 2, .y = 2};
     lltui_pos end_pos   = {.x = 20, .y = 2};
@@ -46,12 +46,12 @@ int main() {
     lltui_pos_move_down(&end_pos);
     int32_t d2 = lltui_widget_create(&ctx, start_pos, end_pos, lltui_textfield);
 
-    lltui_pos_move_down(&start_pos);
-    lltui_pos_move_down(&end_pos);
-    int32_t d3 = lltui_widget_create(&ctx, start_pos, end_pos, lltui_line);
-    
-    lltui_pos end_pos2 = {.x = 2, .y = 10};
-    int32_t d4 = lltui_widget_create(&ctx, start_pos, end_pos2, lltui_line);
+
+
+
+    lltui_pos box_a = {.x = 1, .y = 1};
+    lltui_pos box_b = {.x = 50, .y = 10};
+    int32_t d5 = lltui_widget_create(&ctx, box_a, box_b, lltui_box);
 
     lltui_widget_set_text(&ctx, d2, "Maximilian");
 
@@ -61,8 +61,7 @@ int main() {
      
     lltui_widget_print(&ctx, d);
     lltui_widget_print(&ctx, d2);
-    lltui_widget_print(&ctx, d3);
-    lltui_widget_print(&ctx, d4);
+    lltui_widget_print(&ctx, d5);
 
 
     

@@ -60,3 +60,18 @@ bool lltui_pos_move_together(lltui_pos* start_pos, lltui_pos* end_pos) {
 
     return false;
 }
+
+lltui_pos lltui_pos_get_corner(lltui_pos start_pos, lltui_pos end_pos, lltui_corner_type type) {
+    lltui_pos pos;
+
+    switch (type)
+    {
+        case lltui_up_left:     pos = start_pos;                                        break;
+        case lltui_up_right:    pos = (lltui_pos){.x = end_pos.x, .y = start_pos.y};    break;
+        case lltui_down_left:   pos = (lltui_pos){.x = start_pos.x, .y = end_pos.y};    break;
+        case lltui_down_right:  pos = end_pos;
+        default: break;
+    }
+
+    return pos;
+}

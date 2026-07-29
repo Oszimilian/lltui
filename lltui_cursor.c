@@ -111,3 +111,20 @@ void lltui_cursor_draw_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
     } while(lltui_pos_move_together(&start_pos, &end_pos) == false);
     
 }
+
+void lltui_cursor_draw_corner(lltui_ctx* ctx, lltui_pos pos, lltui_corner_type type) {
+    char* insert = &str[0];
+    *(insert++) = 0xE2;
+    *(insert++) = 0x94;
+
+
+    switch(type) {
+        case lltui_up_left:     *(insert++) = 0x8C; break;
+        case lltui_up_right:    *(insert++) = 0x90; break;
+        case lltui_down_left:   *(insert++) = 0x94; break;
+        case lltui_down_right:  *(insert++) = 0x98; break;
+        default: break;
+    }
+
+    ctx->cb.tx_cb(str, (uint32_t)(insert - str));
+}
