@@ -23,6 +23,8 @@ typedef struct {
     uint32_t y;
 }lltui_pos;
 
+#define LLTUI_POS(_x, _y) {.x = _x, .y = _y};
+
 
 uint32_t lltui_pos_abs_diff_x(lltui_pos start_pos, lltui_pos end_pos);
 uint32_t lltui_pos_abs_diff_y(lltui_pos start_pos, lltui_pos end_pos);

@@ -4,6 +4,7 @@
 #include "lltui_print.h"
 #include "lltui_cursor.h"
 #include "string.h"
+#include "lltui_string.h"
 
 int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos, lltui_widget_type type) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
@@ -58,6 +59,16 @@ int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
 
             widget->type.box.lines[3] = lltui_widget_create(ctx, start_pos, corner_pos, lltui_line);
 
+            widget->updated = true;
+            break;
+
+        case lltui_intfield:
+            widget->type.integer.desc = -1;
+            widget->updated = true;
+            break;
+
+        case lltui_floatfield:
+            widget->type.floatingpoint.desc = -1;
             widget->updated = true;
             break;
 
@@ -120,6 +131,27 @@ void lltui_widget_set_text(lltui_ctx* ctx, int32_t descriptor, char* str) {
     widget->updated = true;
 }
 
+void lltui_widget_set_integer(lltui_ctx* ctx, int32_t descriptor, int32_t value) {
+    LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
+
+    lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
+    LLTUI_ASSERT(widget->widget_type != lltui_intfield, "descriptor is not a lltui_intfield widget");
+
+    uint32_t max_len = lltui_pos_abs_diff_x(widget->start_pos, widget->end_pos);
+
+    if (widget->type.integer.desc == -1) {
+        widget->type.integer.desc = lltui_arena_malloc(&ctx->widget_arena, max_len + 1);
+    }
+
+    char* data = (char*)lltui_arena_get_ref(&ctx->widget_arena, widget->type.integer.desc);
+    bool is_negative = (value > 0) ? false : true;
+    value = (is_negative) ? -value : value;
+    uint32_t len = lltui_string_attache_number(data, (uint32_t)value);
+    lltui_string_swap_character(data, len);
+
+    widget->updated = true;
+}
+
 
 void lltui_widget_info(lltui_ctx* ctx, int32_t descriptor) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
@@ -149,7 +181,12 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
 
     if(widget->updated == false) return;
 
-    lltui_cursor_color(ctx, widget->color);
+    if (widget->visability == lltui_visible) {
+        lltui_cursor_color(ctx, widget->color);
+    } else {
+        lltui_cursor_color(ctx, ctx->color);
+    }
+    
 
     switch (widget->widget_type)
     {
@@ -165,12 +202,15 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
         case lltui_line:
             lltui_cursor_clear_line(ctx, widget->start_pos, widget->end_pos);
             lltui_cursor_move(ctx, widget->start_pos);
+            if (widget->visability == lltui_shadowd) break;
             lltui_cursor_draw_line(ctx, widget->start_pos, widget->end_pos);
             break;
 
         case lltui_corner:
             lltui_cursor_move(ctx, widget->start_pos);
-            lltui_cursor_draw_corner(ctx, widget->start_pos, widget->type.corner.corner_type);
+            
+            if (widget->visability == lltui_shadowd) break;
+            lltui_cursor_draw_corner(ctx, widget->type.corner.corner_type);
             break;
 
         case lltui_box:
@@ -190,18 +230,22 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
     widget->updated = false;
 }
 
-void lltui_widget_show(lltui_ctx* ctx, int32_t descriptor) {
-    LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
-    lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
 
-    widget->visability = lltui_visible;
-}
 
 void lltui_widget_color_foreground(lltui_ctx* ctx, int32_t descriptor, uint8_t color) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
     lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
 
     widget->color.foreground = color;
+
+    if (widget->widget_type == lltui_box) {
+        for (uint8_t i = 0; i < 4; i++) {
+            lltui_widget_color_foreground(ctx, widget->type.box.corners[i], widget->color.foreground);
+            lltui_widget_color_foreground(ctx, widget->type.box.lines[i], widget->color.foreground);            
+        }
+    }
+
+    widget->updated = true;
 }
 
 void lltui_widget_color_background(lltui_ctx* ctx, int32_t descriptor, uint8_t color) {
@@ -209,11 +253,45 @@ void lltui_widget_color_background(lltui_ctx* ctx, int32_t descriptor, uint8_t c
     lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
 
     widget->color.background = color + 10;
+
+    if (widget->widget_type == lltui_box) {
+        for (uint8_t i = 0; i < 4; i++) {
+            lltui_widget_color_background(ctx, widget->type.box.corners[i], widget->color.background);
+            lltui_widget_color_background(ctx, widget->type.box.lines[i], widget->color.background);            
+        }
+    }
+
+
+    widget->updated = true;
+}
+
+void lltui_widget_show(lltui_ctx* ctx, int32_t descriptor) {
+    LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
+    lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
+
+    if (widget->widget_type == lltui_box) {
+        for (uint8_t i = 0; i < 4; i++) {
+            lltui_widget_show(ctx, widget->type.box.corners[i]);
+            lltui_widget_show(ctx, widget->type.box.lines[i]);            
+        }
+    }
+
+    widget->visability = lltui_visible;
+    widget->updated = true;
 }
 
 void lltui_widget_shadow(lltui_ctx* ctx, int32_t descriptor) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
     lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
 
+    if (widget->widget_type == lltui_box) {
+        for (uint8_t i = 0; i < 4; i++) {
+            lltui_widget_shadow(ctx, widget->type.box.corners[i]);
+            lltui_widget_shadow(ctx, widget->type.box.lines[i]);            
+        }
+    }
+
     widget->visability = lltui_shadowd;
+    widget->updated = true;
 }
+

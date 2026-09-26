@@ -3,31 +3,12 @@
 #include "lltui_assert.h"
 #include "lltui_makros.h"
 #include "lltui_pos.h"
+#include "lltui_string.h"
 
 static char str[128] = {0};
 
 
-uint32_t str_attache_number(char* str, uint32_t pos) {
-    uint32_t len = 0;
 
-    do{
-        str[len++] = (char)('0' + pos % 10);
-        pos /= 10;
-    }while(pos > 0);
-
-    return len;
-}
-
-void str_swap(char* str, uint32_t len) {
-    int i = 0;
-    int k = len - 1;
-
-    for (; i < k; i++, k--) {
-        char tmp = str[i];
-        str[i] = str[k];
-        str[k] = tmp;
-    }
-}
 
 void lltui_cursor_move(lltui_ctx* ctx, lltui_pos pos) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
@@ -37,15 +18,15 @@ void lltui_cursor_move(lltui_ctx* ctx, lltui_pos pos) {
     *(insert++) = 0x1B;
     *(insert++) = '[';
 
-    uint32_t len = str_attache_number(insert, pos.y);
-    str_swap(insert, len);
+    uint32_t len = lltui_string_attache_number(insert, pos.y);
+    lltui_string_swap_character(insert, len);
 
     insert += len;
 
     *(insert++) = ';';
 
-    len = str_attache_number(insert, pos.x);
-    str_swap(insert, len);
+    len = lltui_string_attache_number(insert, pos.x);
+    lltui_string_swap_character(insert, len);
 
     insert += len;
 
@@ -68,8 +49,8 @@ void lltui_cursor_color(lltui_ctx* ctx, lltui_color color) {
     *(insert++) = 0x1B;
     *(insert++) = '[';
 
-    uint32_t len = str_attache_number(insert, color.foreground);
-    str_swap(insert, len);
+    uint32_t len = lltui_string_attache_number(insert, color.foreground);
+    lltui_string_swap_character(insert, len);
 
     insert += len;
     *(insert++) = 'm';
@@ -78,8 +59,8 @@ void lltui_cursor_color(lltui_ctx* ctx, lltui_color color) {
     *(insert++) = 0x1B;
     *(insert++) = '[';
 
-    len = str_attache_number(insert, color.background);
-    str_swap(insert, len);
+    len = lltui_string_attache_number(insert, color.background);
+    lltui_string_swap_character(insert, len);
 
     insert += len;
     *(insert++) = 'm';
@@ -112,7 +93,7 @@ void lltui_cursor_draw_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
     
 }
 
-void lltui_cursor_draw_corner(lltui_ctx* ctx, lltui_pos pos, lltui_corner_type type) {
+void lltui_cursor_draw_corner(lltui_ctx* ctx, lltui_corner_type type) {
     char* insert = &str[0];
     *(insert++) = 0xE2;
     *(insert++) = 0x94;

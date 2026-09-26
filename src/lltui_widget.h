@@ -18,7 +18,9 @@ typedef enum {
     lltui_textfield,
     lltui_line,
     lltui_box,
-    lltui_corner
+    lltui_corner,
+    lltui_intfield,
+    lltui_floatfield
 }lltui_widget_type;
 
 
@@ -44,6 +46,12 @@ typedef struct lltui_widget{
             int32_t lines[4];
             int32_t corners[4];
         }box;
+        struct {
+            int32_t desc;
+        }integer;
+        struct {
+            int32_t desc;
+        }floatingpoint;
     }type;
 }lltui_widget;
 
