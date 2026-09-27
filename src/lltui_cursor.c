@@ -8,32 +8,21 @@
 static char str[128] = {0};
 
 
-
-
 void lltui_cursor_move(lltui_ctx* ctx, lltui_pos pos) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
 
-    char* insert = &str[0];
+    lltui_string tmp;
+    lltui_string_init(&tmp, &str[0], ARRAY_SIZE(str));
 
-    *(insert++) = 0x1B;
-    *(insert++) = '[';
+    tmp = lltui_string_attach_str(tmp, "\e[");
+    tmp = lltui_string_attach_number(tmp, pos.y);
+    tmp = lltui_string_attach_char(tmp, ';');
+    tmp = lltui_string_attach_number(tmp, pos.x);
+    tmp = lltui_string_attach_char(tmp, 'H');
 
-    uint32_t len = lltui_string_attache_number(insert, pos.y);
-    lltui_string_swap_character(insert, len);
+    LLTUI_ASSERT(tmp.error, "lltui_cursor_move buffer overflow");
 
-    insert += len;
-
-    *(insert++) = ';';
-
-    len = lltui_string_attache_number(insert, pos.x);
-    lltui_string_swap_character(insert, len);
-
-    insert += len;
-
-    *(insert++) = 'H';
-    *(insert) = '\0';
-
-    ctx->cb.tx_cb(str, (uint32_t)(insert - str) + 1);
+    ctx->cb.tx_cb(tmp.data, tmp.len);
 }
 
 void lltui_cursor_clear_window(lltui_ctx* ctx) {
@@ -42,31 +31,24 @@ void lltui_cursor_clear_window(lltui_ctx* ctx) {
 }
 
 void lltui_cursor_color(lltui_ctx* ctx, lltui_color color) {
-    
-    char* insert = &str[0];
+    LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
+
+    lltui_string tmp;
+    lltui_string_init(&tmp, &str[0], ARRAY_SIZE(str));
 
     //foreground
-    *(insert++) = 0x1B;
-    *(insert++) = '[';
-
-    uint32_t len = lltui_string_attache_number(insert, color.foreground);
-    lltui_string_swap_character(insert, len);
-
-    insert += len;
-    *(insert++) = 'm';
+    tmp = lltui_string_attach_str(tmp, "\e[");
+    tmp = lltui_string_attach_number(tmp, color.foreground);
+    tmp = lltui_string_attach_char(tmp, 'm');
 
     //background
-    *(insert++) = 0x1B;
-    *(insert++) = '[';
+    tmp = lltui_string_attach_str(tmp, "\e[");
+    tmp = lltui_string_attach_number(tmp, color.background);
+    tmp = lltui_string_attach_char(tmp, 'm');
 
-    len = lltui_string_attache_number(insert, color.background);
-    lltui_string_swap_character(insert, len);
+    LLTUI_ASSERT(tmp.error, "lltui_cursor_color buffer overflow");
 
-    insert += len;
-    *(insert++) = 'm';
-
-
-    ctx->cb.tx_cb(str, (uint32_t)(insert - str));
+    ctx->cb.tx_cb(tmp.data, tmp.len);
 }
 
 
@@ -94,18 +76,16 @@ void lltui_cursor_draw_line(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
 }
 
 void lltui_cursor_draw_corner(lltui_ctx* ctx, lltui_corner_type type) {
-    char* insert = &str[0];
-    *(insert++) = 0xE2;
-    *(insert++) = 0x94;
-
+    lltui_string tmp;
+    lltui_string_init(&tmp, &str[0], ARRAY_SIZE(str));
 
     switch(type) {
-        case lltui_up_left:     *(insert++) = 0x8C; break;
-        case lltui_up_right:    *(insert++) = 0x90; break;
-        case lltui_down_left:   *(insert++) = 0x94; break;
-        case lltui_down_right:  *(insert++) = 0x98; break;
+        case lltui_up_left:     tmp = lltui_string_attach_str(tmp, "\xE2\x94\x8C"); break;
+        case lltui_up_right:    tmp = lltui_string_attach_str(tmp, "\xE2\x94\x90"); break;
+        case lltui_down_left:   tmp = lltui_string_attach_str(tmp, "\xE2\x94\x94"); break;
+        case lltui_down_right:  tmp = lltui_string_attach_str(tmp, "\xE2\x94\x98"); break;
         default: break;
     }
 
-    ctx->cb.tx_cb(str, (uint32_t)(insert - str));
+    ctx->cb.tx_cb(tmp.data, tmp.len);
 }

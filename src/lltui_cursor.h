@@ -8,9 +8,6 @@
 
 
 
-uint32_t str_attache_number(char* str, uint32_t pos);
-void str_swap(char* str, uint32_t len);
-
 void lltui_cursor_move(lltui_ctx* ctx, lltui_pos pos);
 void lltui_cursor_clear_window(lltui_ctx* ctx);
 void lltui_cursor_color(lltui_ctx* ctx, lltui_color color);

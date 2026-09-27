@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/lltui_${input:testName}_test",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "preLaunchTask": "build test",
+            "externalConsole": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testName",
+            "type": "promptString",
+            "description": "Name der Testdatei ohne .c (z.B. field, box, intfield)",
+            "default": "field"
+        }
+    ]
+}

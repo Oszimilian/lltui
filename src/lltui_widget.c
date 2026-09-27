@@ -3,8 +3,8 @@
 #include "lltui_assert.h"
 #include "lltui_print.h"
 #include "lltui_cursor.h"
-#include "string.h"
 #include "lltui_string.h"
+#include <string.h>
 
 int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_pos, lltui_widget_type type) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
@@ -21,9 +21,20 @@ int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
             widget->updated = false;
             break;
 
+        
         case lltui_line: 
             widget->type.textfield.desc = -1;
             widget->updated = true;
+            break;
+
+        case lltui_intfield:
+            widget->type.integer.desc = -1;
+            widget->updated = false;
+            break;
+
+        case lltui_floatfield:
+            widget->type.floatingpoint.desc = -1;
+            widget->updated = false;
             break;
 
         case lltui_corner:
@@ -62,15 +73,7 @@ int32_t lltui_widget_create(lltui_ctx* ctx, lltui_pos start_pos, lltui_pos end_p
             widget->updated = true;
             break;
 
-        case lltui_intfield:
-            widget->type.integer.desc = -1;
-            widget->updated = true;
-            break;
 
-        case lltui_floatfield:
-            widget->type.floatingpoint.desc = -1;
-            widget->updated = true;
-            break;
 
         default: break;
     }
@@ -109,24 +112,32 @@ void lltui_widget_set_pos(lltui_ctx* ctx, int32_t descriptor, lltui_pos start_po
     ctx->lowest_pos = lltui_pos_get_lowest(ctx->lowest_pos, tmp_lowest);
 }
 
-void lltui_widget_set_text(lltui_ctx* ctx, int32_t descriptor, char* str) {
+static lltui_string lltui_widget_get_string(lltui_ctx* ctx, lltui_widget* widget, int32_t* desc) {
+    uint32_t max_len = lltui_pos_abs_diff_x(widget->start_pos, widget->end_pos);
+
+    if (*desc == -1) {
+        *desc = lltui_arena_malloc(&ctx->widget_arena, max_len + 1);
+    }
+
+    lltui_string str;
+    lltui_string_init(&str, (char*)lltui_arena_get_ref(&ctx->widget_arena, *desc), max_len + 1);
+
+    return str;
+}
+
+void lltui_widget_set_text(lltui_ctx* ctx, int32_t descriptor, char* text) {
     LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
 
     lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
     LLTUI_ASSERT(widget->widget_type != lltui_textfield, "descriptor is not a textfield widget");
 
-    uint32_t max_len = lltui_pos_abs_diff_x(widget->start_pos, widget->end_pos);
-    uint32_t text_len = strlen(str);
-    if (text_len > max_len) {
-        text_len = max_len;
-    }
+    lltui_string str = lltui_widget_get_string(ctx, widget, &widget->type.textfield.desc);
 
-    if (widget->type.textfield.desc == -1) {
-        widget->type.textfield.desc =  lltui_arena_malloc(&ctx->widget_arena, max_len + 1);
+    // cut the text if it is wider than the field
+    for (; *text != '\0'; text++) {
+        str = lltui_string_attach_char(str, *text);
+        if (str.error) break;
     }
-
-    char* data = (char*)lltui_arena_get_ref(&ctx->widget_arena, widget->type.textfield.desc);
-    strncpy(data, str, max_len);
 
     widget->updated = true;
 }
@@ -137,17 +148,28 @@ void lltui_widget_set_integer(lltui_ctx* ctx, int32_t descriptor, int32_t value)
     lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
     LLTUI_ASSERT(widget->widget_type != lltui_intfield, "descriptor is not a lltui_intfield widget");
 
-    uint32_t max_len = lltui_pos_abs_diff_x(widget->start_pos, widget->end_pos);
+    lltui_string str = lltui_widget_get_string(ctx, widget, &widget->type.integer.desc);
 
-    if (widget->type.integer.desc == -1) {
-        widget->type.integer.desc = lltui_arena_malloc(&ctx->widget_arena, max_len + 1);
+    str = lltui_string_attach_int(str, value);
+    if (str.error) {
+        str = lltui_string_attach_char(str, '#');
     }
 
-    char* data = (char*)lltui_arena_get_ref(&ctx->widget_arena, widget->type.integer.desc);
-    bool is_negative = (value > 0) ? false : true;
-    value = (is_negative) ? -value : value;
-    uint32_t len = lltui_string_attache_number(data, (uint32_t)value);
-    lltui_string_swap_character(data, len);
+    widget->updated = true;
+}
+
+void lltui_widget_set_float(lltui_ctx* ctx, int32_t descriptor, float value) {
+    LLTUI_ASSERT(ctx == NULL, "ctx is NULL");
+
+    lltui_widget* widget = (lltui_widget*)lltui_arena_get_ref(&ctx->widget_arena, descriptor);
+    LLTUI_ASSERT(widget->widget_type != lltui_floatfield, "descriptor is not a lltui_floatfield widget");
+
+    lltui_string str = lltui_widget_get_string(ctx, widget, &widget->type.floatingpoint.desc);
+
+    str = lltui_string_attach_float(str, value, LLTUI_WIDGET_FLOAT_PRECISION);
+    if (str.error) {
+        str = lltui_string_attach_char(str, '#');
+    }
 
     widget->updated = true;
 }
@@ -190,6 +212,8 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
 
     switch (widget->widget_type)
     {
+        case lltui_floatfield:
+        case lltui_intfield:
         case lltui_textfield:
             lltui_cursor_clear_line(ctx, widget->start_pos, widget->end_pos);
             lltui_cursor_move(ctx, widget->start_pos);
@@ -222,6 +246,7 @@ void lltui_widget_print(lltui_ctx* ctx, int32_t descriptor) {
                 lltui_widget_print(ctx, widget->type.box.corners[i]);
             }
             break;
+
 
     
         default: break;
